@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Client</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <div class="led off" data-type="D0"></div>
+      <div class="led off" data-type="D1"></div>
+      <!-- <div class="led off" data-type="D2"></div>
+      <div class="led off" data-type="D3"></div> -->
+    </main>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script type="module">
+      import { io } from "https://cdn.socket.io/4.8.0/socket.io.esm.min.js";
+
+      const socket = io("192.168.29.45:3000");
+
+      socket.on("connect", () => {
+        console.log("connected");
+        socket.emit("join", "rattankumar2511@gmail.com");
+      });
+
+      socket.on("data", function (data) {
+        try {
+          console.log(data.split(""));
+          $.each(data.split(""), function (indexInArray, valueOfElement) {
+            if (valueOfElement == 0) {
+              $($(".led")[indexInArray]).removeClass("on").addClass("off");
+            } else {
+              $($(".led")[indexInArray]).removeClass("off").addClass("on");
+            }
+          });
+        } catch (error) {}
+      });
+
+      $(".led").click(function () {
+        var type = $(this).data("type");
+        var data;
+        var isOff = $(this).hasClass("off");
+        if (isOff) {
+          data = 1;
+        } else {
+          data = 0;
+        }
+        $(this).toggleClass("off").toggleClass("on");
+        socket.emit("control", {
+          type,
+          data,
+          room: "rattankumar2511@gmail.com",
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+.led {
+  width: 40vw;
+  height: 40vw;
+  border-radius: 80px;
+  margin: 10px;
+  display: inline-flex;
+}
+
+.on {
+  background-color: greenyellow;
+}
+
+.off {
+  background-color: crimson;
+}
+
+@media screen and (min-width: 800px) {
+  .led {
+    width: 20vw;
+    height: 20vw;
+  }
+}
