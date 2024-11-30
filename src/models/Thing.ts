@@ -9,9 +9,9 @@ const thingSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  switches: [
+  switchIds: [
     {
-      type: Switch,
+      type: Schema.Types.ObjectId,
       required: false,
     },
   ],
