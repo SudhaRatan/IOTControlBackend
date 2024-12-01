@@ -1,5 +1,5 @@
 import Express from "express";
-import { login } from "../types";
+import { login, register } from "../types";
 import User from "../models/User";
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -14,7 +14,7 @@ router.route("/").post(async (req, res) => {
   } else {
     if (user.password && (await compare(password, user.password))) {
       const token = jwt.sign({ id: user._id }, process.env.access_token!);
-      res.json({ token: token, user: user._id });
+      res.json({ token: token, user });
     } else {
       res.status(402).json({ message: "Wrong password" });
     }
@@ -22,9 +22,10 @@ router.route("/").post(async (req, res) => {
 });
 
 router.route("/register").post(async (req, res) => {
-  const { email, password } = req.body as login;
-  if (!email || !password) {
-    res.status(404).json({ message: "Please fill email and password fields" });
+  const { email, password, name } = req.body as register;
+  if (!email || !password || !name) {
+    res.status(404).json({ message: "Please fill all fields" });
+    return
   }
   const user = await User.findOne({ email: email });
   if (user) {
@@ -32,12 +33,13 @@ router.route("/register").post(async (req, res) => {
   } else {
     const pass = await hash(password, 10);
     const user1 = new User({
-      email: email,
+      email,
       password: pass,
+      name,
     });
     await user1.save();
     res.json({ status: true });
   }
 });
 
-export default router
+export default router;
