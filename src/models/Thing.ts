@@ -15,6 +15,9 @@ const thingSchema = new Schema({
       required: false,
     },
   ],
+  icon:{
+    type: String,
+  }
 });
 
 export default model("Thing", thingSchema);
