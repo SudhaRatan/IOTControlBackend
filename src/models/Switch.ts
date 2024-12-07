@@ -12,9 +12,13 @@ const switchSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Thing",
   },
-  icon:{
+  switchId: {
     type: String,
-  }
+    require: true,
+  },
+  icon: {
+    type: String,
+  },
 });
 
 export default model("Switch", switchSchema);

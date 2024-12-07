@@ -77,8 +77,9 @@ router.delete("/:id", verifyJWT, async (req, res) => {
     });
     if (!thing) {
       res.status(404).json({ message: "Thing not found" });
+      return
     }
-    res.json({ message: "Thing deleted" });
+    res.json({ message: "Device removed" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error deleting thing" });
