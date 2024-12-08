@@ -25,7 +25,7 @@ router.post("/", verifyJWT, async (req, res) => {
 router.get("/", verifyJWT, async (req, res) => {
   try {
     const { userId } = req as AuthenticatedRequest;
-    const things = await Thing.find({ userId });
+    const things = await Thing.find({ userId }).populate("switches");
     res.json(things);
   } catch (error) {
     console.error(error);

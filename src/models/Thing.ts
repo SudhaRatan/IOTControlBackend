@@ -9,15 +9,16 @@ const thingSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
   },
-  switchIds: [
+  switches: [
     {
       type: Schema.Types.ObjectId,
+      ref: "Switch",
       required: false,
     },
   ],
-  icon:{
+  icon: {
     type: String,
-  }
+  },
 });
 
 export default model("Thing", thingSchema);

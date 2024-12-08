@@ -2,6 +2,7 @@ import Express from "express";
 import verifyJWT from "../middlewares/auth";
 import Switch from "../models/Switch";
 import { AuthenticatedRequest } from "../types";
+import Thing from "../models/Thing";
 
 const router = Express.Router();
 
@@ -9,11 +10,24 @@ const router = Express.Router();
 router.post("/", verifyJWT, async (req, res) => {
   try {
     const { userId } = req as AuthenticatedRequest;
+    const { thingId } = req.body;
+
     const newSwitch = new Switch({
       ...req.body,
       userId,
     });
     await newSwitch.save();
+
+    const thing = await Thing.findById(thingId);
+    if (thing) {
+        thing.switches.push(newSwitch._id);
+        await thing.save();
+    } else {
+        console.warn(`Thing with ID ${thingId} not found. Switch created but not linked.`); // Log a warning if the Thing isn't found, but still create the switch
+        res.status(404).json({ message: "Thing not found, switch created" })
+        return
+    }
+
     res.status(201).json(newSwitch);
   } catch (error) {
     console.error(error);
