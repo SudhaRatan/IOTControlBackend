@@ -2,6 +2,7 @@ import Express from "express";
 import verifyJWT from "../middlewares/auth";
 import Thing from "../models/Thing";
 import { AuthenticatedRequest } from "../types";
+import Switch from "../models/Switch";
 
 const router = Express.Router();
 
@@ -75,9 +76,10 @@ router.delete("/:id", verifyJWT, async (req, res) => {
       _id: req.params.id,
       userId,
     });
+    await Switch.deleteMany({ thingId: req.params.id });
     if (!thing) {
       res.status(404).json({ message: "Thing not found" });
-      return
+      return;
     }
     res.json({ message: "Device removed" });
   } catch (error) {
