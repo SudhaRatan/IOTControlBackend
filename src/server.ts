@@ -1,4 +1,4 @@
-import { Switch } from "./types";
+import { DeviceId, Switch, controlData, joinData } from "./types";
 import express from "express";
 import http from "http";
 import cors from "cors";
@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import auth from "./routes/auth";
 import things from "./routes/things";
 import switches from "./routes/switches";
+import { verifyJWT } from "./utils/socket";
 
 const corsOptions = {
   origin: "*",
@@ -29,47 +30,39 @@ const db = mongoose.connection;
 db.on("error", (error) => console.error(error));
 db.once("open", () => console.log("Connected to mongoose"));
 
-// const wss = new WebSocketServer({ server });
 const io = new Server(server, { cors: { origin: "*" } });
+
+const devices = new Map<DeviceId, Switch[]>()
 
 io.on("connection", (socket) => {
   console.log("Connected");
 
   socket.emit("join");
 
-  socket.on("join", (data) => {
-    socket.join(data);
-    io.sockets.in(data).emit("data", Object.values(relays).join(""));
+  socket.on("join", ({ deviceId, token, device }: joinData) => {
+    verifyJWT(token).then(() => {
+      socket.join(deviceId);
+      if (device) {
+        devices.set(device.deviceId, device.switches)
+      }
+      io.sockets.in(deviceId).emit("data", devices.get(deviceId));
+    }).catch(() => { })
   });
 
-  socket.on("control", function (data) {
-    console.log(data);
-    switch (data.type) {
-      case "D0":
-        relays.d0 = data.data;
-        break;
-      case "D1":
-        relays.d1 = data.data;
-        break;
-      case "D2":
-        relays.d2 = data.data;
-        break;
-      case "D4":
-        relays.d3 = data.data;
-        break;
+  socket.on("control", function ({ deviceId, switchId, switchState }: controlData) {
+    const switches = devices.get(deviceId)
+    const changedSwitches = switches?.map((s) => {
+      if (s.switchId == switchId) {
+        s.switchState = switchState
+      }
+      return s
+    })
+    if (changedSwitches) {
+      devices.set(deviceId, changedSwitches)
+      io.sockets.in(deviceId).emit("data", changedSwitches);
     }
-    io.sockets.in(data.room).emit("data", Object.values(relays).join(""));
   });
 });
-
-var relayCollection = [];
-
-var relays: Switch = {
-  d0: "0",
-  d1: "0",
-  d2: "0",
-  d3: "0",
-};
 
 app.use(express.static(path.join(__dirname, "..", "/Static")));
 app.use("/auth", auth);
